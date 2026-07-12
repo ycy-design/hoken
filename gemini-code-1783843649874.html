@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>よぼうゲーム・どっちがせいかい？</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #f0fdf4;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #16a34a;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .stage {
+            background-color: white;
+            border: 4px solid #86efac;
+            border-radius: 20px;
+            max-width: 500px;
+            margin: 15px auto;
+            padding: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+        #enemy-area {
+            font-size: 70px;
+            height: 110px;
+            line-height: 110px;
+            margin-bottom: 10px;
+        }
+        #game-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #374151;
+            min-height: 54px;
+            margin-bottom: 20px;
+            padding: 5px;
+        }
+        /* 10個のボタンを並べる設定 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+        .choice-btn {
+            background-color: #f8fafc;
+            border: 3px solid #cbd5e1;
+            border-radius: 15px;
+            padding: 15px 5px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #cbd5e1;
+        }
+        .choice-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        #restart-btn {
+            display: none;
+            background-color: #e11d48;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 0 #9f1239;
+        }
+        #restart-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>どっちが せいかい？バイキンたいじ</h1>
+    
+    <div class="stage">
+        <div id="enemy-area">👾</div>
+        <div id="game-message">バイキンが あらわれた！<br>体に いいことを えらんで やっつけよう！</div>
+
+        <div class="grid-container" id="buttons-area">
+            <button class="choice-btn" onclick="checkAnswer(true, 'てを あらう', '🧼')">🧼<br>てをあらう</button>
+            <button class="choice-btn" onclick="checkAnswer(true, 'うがいを する', '🥛')">🥛<br>うがいをする</button>
+            <button class="choice-btn" onclick="checkAnswer(true, 'はやく ねる', '💤')">💤<br>はやくねる</button>
+            <button class="choice-btn" onclick="checkAnswer(true, 'ごはんを たべる', '🍙')">🍙<br>ごはんをたべる</button>
+            <button class="choice-btn" onclick="checkAnswer(true, 'マスクを する', '😷')">😷<br>マスクをする</button>
+            <button class="choice-btn" onclick="checkAnswer(true, 'まどを あける', '🪟')">🪟<br>まどをあける</button>
+            
+            <button class="choice-btn" onclick="checkAnswer(false, 'よふかしを する', '😈')">😈<br>よふかしをする</button>
+            <button class="choice-btn" onclick="checkAnswer(false, 'てを あらわない', '🦠')">🦠<br>てをあらわない</button>
+            <button class="choice-btn" onclick="checkAnswer(false, 'おかしだけ たべる', '🍭')">🍭<br>おかしだけたべる</button>
+            <button class="choice-btn" onclick="checkAnswer(false, 'つめを かむ', '🦷')">🦷<br>つめをかむ</button>
+        </div>
+
+        <button id="restart-btn" onclick="resetGame()">もう一回あそぶ！</button>
+    </div>
+
+    <script>
+        function checkAnswer(isCorrect, action, emoji) {
+            const enemyArea = document.getElementById('enemy-area');
+            const gameMessage = document.getElementById('game-message');
+            const buttonsArea = document.getElementById('buttons-area');
+            const restartBtn = document.getElementById('restart-btn');
+
+            if (isCorrect) {
+                // 正解のときの演出
+                enemyArea.innerHTML = '✨👑✨';
+                gameMessage.innerHTML = `せいかい！「${action}」の わざ！<br>バイキンをやっつけたぞ！すごーい！`;
+                
+                // ボタンを隠してリセットボタンを出す
+                buttonsArea.style.display = 'none';
+                restartBtn.style.display = 'inline-block';
+            } else {
+                // 不正解のときの演出
+                enemyArea.innerHTML = '🔥👾🔥';
+                gameMessage.innerHTML = `あちゃー！「${action}」だと<br>バイキンが 元気になっちゃった！ちがうのを えらぼう！`;
+                
+                // 不正解のときはボタンを隠さず、選び直せるようにする
+            }
+        }
+
+        function resetGame() {
+            document.getElementById('enemy-area').innerHTML = '👾';
+            document.getElementById('game-message').innerHTML = 'あ！ また バイキンが あらわれた！<br>つぎの わざを えらぼう！';
+            document.getElementById('buttons-area').style.display = 'grid';
+            document.getElementById('restart-btn').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
