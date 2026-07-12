@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>びょうき予防（よぼう）クイズ - はなまる＆ランダム</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #f0fdf4;
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            overflow: hidden;
+        }
+        h1 {
+            color: #16a34a;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        /* メインのゲーム画面 */
+        .stage {
+            background-color: white;
+            border: 4px solid #86efac;
+            border-radius: 20px;
+            max-width: 500px;
+            margin: 15px auto;
+            padding: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+        #enemy-area {
+            font-size: 70px;
+            height: 110px;
+            line-height: 110px;
+            margin-bottom: 10px;
+        }
+        #game-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #374151;
+            min-height: 54px;
+            margin-bottom: 20px;
+            padding: 5px;
+        }
+        /* 10個のボタンを並べる設定 */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+        .choice-btn {
+            background-color: #f8fafc;
+            border: 3px solid #cbd5e1;
+            border-radius: 15px;
+            padding: 15px 5px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #cbd5e1;
+            transition: all 0.2s ease;
+        }
+        .choice-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        /* ボタンが消える時のスタイル */
+        .choice-btn.fade-out {
+            opacity: 0;
+            transform: scale(0.5);
+            pointer-events: none;
+        }
+
+        /* 大きなバツマーク（不正解時） */
+        #wrong-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 0, 0, 0.4);
+            color: white;
+            font-size: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            z-index: 100;
+        }
+        #wrong-overlay.show {
+            opacity: 1;
+        }
+
+        /* 💮 はなまるクリア画面（初期状態は非表示） */
+        #clear-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fffbeb; /* 優しい黄色背景 */
+            z-index: 200;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .hanamaru-icon {
+            font-size: 150px;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin-bottom: 10px;
+        }
+        .clear-title {
+            font-size: 32px;
+            color: #b45309;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .clear-text {
+            font-size: 20px;
+            color: #78350f;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        /* もう一度あそぶボタン（はなまる画面用） */
+        #restart-btn {
+            background-color: #e11d48;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 40px;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #9f1239;
+        }
+        #restart-btn:active {
+            transform: translateY(6px);
+            box-shadow: none;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>どっちが せいかい？バイキンたいじ</h1>
+    
+    <div class="stage" id="main-stage">
+        <div id="enemy-area">👾</div>
+        <div id="game-message">バイキンが あらわれた！<br>体に いいことを えらんで やっつけよう！</div>
+
+        <div class="grid-container" id="buttons-area"></div>
+    </div>
+
+    <div id="wrong-overlay">×</div>
+
+    <div id="clear-screen">
+        <div class="hanamaru-icon">💮</div>
+        <div class="clear-title">かんぺき！</div>
+        <div class="clear-text">すべての よぼうが できたね！<br>からだ ピカピカの マスターだ！</div>
+        <button id="restart-btn" onclick="resetGame()">もう一度あそぶ</button>
+    </div>
+
+    <script>
+        let correctCount = 0;
+        const totalCorrect = 6;
+
+        // ボタンのデータを定義（正解6つ、不正解4つ）
+        const choicesData = [
+            { isCorrect: true, action: 'てを あらう', emoji: '🧼', id: 'btn-1' },
+            { isCorrect: true, action: 'うがいを する', emoji: '🥛', id: 'btn-2' },
+            { isCorrect: true, action: 'はやく ねる', emoji: '💤', id: 'btn-3' },
+            { isCorrect: true, action: 'ごはんを たべる', emoji: '🍙', id: 'btn-4' },
+            { isCorrect: true, action: 'マスクを する', emoji: '😷', id: 'btn-5' },
+            { isCorrect: true, action: 'まどを あける', emoji: '🪟', id: 'btn-6' },
+            { isCorrect: false, action: 'よふかしを する', emoji: '😈', id: 'btn-7' },
+            { isCorrect: false, action: 'てを あらわない', emoji: '🦠', id: 'btn-8' },
+            { isCorrect: false, action: 'おかしだけ たべる', emoji: '🍭', id: 'btn-9' },
+            { isCorrect: false, action: 'つめを かむ', emoji: '🦷', id: 'btn-10' }
+        ];
+
+        // 画面読み込み時にボタンをランダムに並び替えて表示
+        window.onload = function() {
+            renderButtons();
+        };
+
+        function renderButtons() {
+            const buttonsArea = document.getElementById('buttons-area');
+            buttonsArea.innerHTML = ''; // 一度空にする
+
+            // 配列をランダムにシャッフル（フィッシャー〜イェーツのシャッフル）
+            const shuffled = [...choicesData];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+
+            // シャッフルしたデータをもとにボタンを作成して画面に追加
+            shuffled.forEach(item => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.id = item.id;
+                btn.innerHTML = `${item.emoji}<br>${item.action}`;
+                btn.onclick = function() {
+                    checkAnswer(item.isCorrect, item.action, item.emoji, item.id);
+                };
+                buttonsArea.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(isCorrect, action, emoji, btnId) {
+            const enemyArea = document.getElementById('enemy-area');
+            const gameMessage = document.getElementById('game-message');
+            const wrongOverlay = document.getElementById('wrong-overlay');
+            const clearScreen = document.getElementById('clear-screen');
+
+            if (isCorrect) {
+                // 正解のときの演出
+                enemyArea.innerHTML = '✨👑✨';
+                gameMessage.innerHTML = `せいかい！「${action}」の わざ！<br>バイキンを やっつけたぞ！`;
+                
+                // 正解ボタンを消す
+                const btn = document.getElementById(btnId);
+                if (btn) btn.classList.add('fade-out');
+
+                correctCount++;
+                
+                // すべて正解したら、1秒後にはなまる画面へ移行
+                if (correctCount === totalCorrect) {
+                    setTimeout(() => {
+                        clearScreen.style.display = 'flex';
+                    }, 1000);
+                }
+
+            } else {
+                // 不正解のときの演出
+                enemyArea.innerHTML = '🔥👾🔥';
+                gameMessage.innerHTML = `あちゃー！「${action}」だと<br>バイキンが 元気になっちゃった！`;
+                
+                // 大きなバツマークを表示（1.2秒間）
+                wrongOverlay.classList.add('show');
+                setTimeout(() => {
+                    wrongOverlay.classList.remove('show');
+                }, 1200);
+            }
+        }
+
+        function resetGame() {
+            // データを初期化してページを再読み込み（自動でまたランダムになります）
+            location.reload();
+        }
+    </script>
+
+</body>
+</html>
