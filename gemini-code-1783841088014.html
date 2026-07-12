@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バイキンをやっつけろ！よぼうゲーム</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            background-color: #f0fdf4; /* 優しい緑色ベース */
+            color: #333;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 {
+            color: #16a34a;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .stage {
+            background-color: white;
+            border: 4px solid #86efac;
+            border-radius: 20px;
+            max-width: 500px;
+            margin: 15px auto;
+            padding: 20px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+        }
+        /* バイキンの表示エリア */
+        #enemy-area {
+            font-size: 70px;
+            height: 110px;
+            line-height: 110px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        /* メッセージエリア */
+        #game-message {
+            font-size: 18px;
+            font-weight: bold;
+            color: #374151;
+            min-height: 54px;
+            margin-bottom: 20px;
+            padding: 5px;
+        }
+        /* 6つの選択肢ボタン */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 440px;
+            margin: 0 auto;
+        }
+        .choice-btn {
+            background-color: #f8fafc;
+            border: 3px solid #cbd5e1;
+            border-radius: 15px;
+            padding: 15px 5px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #cbd5e1;
+            transition: none;
+        }
+        /* ボタンを押したときの沈む動き（達成感アップ） */
+        .choice-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+        /* リセットボタン */
+        #restart-btn {
+            display: none;
+            background-color: #e11d48;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 0 #9f1239;
+        }
+        #restart-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>よぼうで バイキンたいじ！</h1>
+    
+    <div class="stage">
+        <!-- バイキンや演出が出る場所 -->
+        <div id="enemy-area">👾</div>
+        <!-- ナレーション -->
+        <div id="game-message">あ！ バイキンが あらわれた！<br>どうやって やっつける？</div>
+
+        <!-- 6つの予防選択肢 -->
+        <div class="grid-container" id="buttons-area">
+            <button class="choice-btn" onclick="attack('てを あらう', '🧼')">🧼<br>てをあらう</button>
+            <button class="choice-btn" onclick="attack('うがいを する', '🥛')">🥛<br>うがいをする</button>
+            <button class="choice-btn" onclick="attack('はやく ねる', '💤')">💤<br>はやくねる</button>
+            <button class="choice-btn" onclick="attack('ごはんを たべる', '🍙')">🍙<br>ごはんをたべる</button>
+            <button class="choice-btn" onclick="attack('マスクを する', '😷')">😷<br>マスクをする</button>
+            <button class="choice-btn" onclick="attack('まどを あける', '🪟')">🪟<br>まどをあける</button>
+        </div>
+
+        <button id="restart-btn" onclick="resetGame()">もう一回あそぶ！</button>
+    </div>
+
+    <script>
+        function attack(action, emoji) {
+            const enemyArea = document.getElementById('enemy-area');
+            const gameMessage = document.getElementById('game-message');
+            const buttonsArea = document.getElementById('buttons-area');
+            const restartBtn = document.getElementById('restart-btn');
+
+            // 1. 選んだ予防の技をくりだす演出
+            enemyArea.innerHTML = emoji;
+            gameMessage.innerHTML = `「${action}」の わざを くりだした！`;
+
+            // 2. 少し時間を置いて、バイキンが倒れる演出（1秒後）
+            setTimeout(() => {
+                enemyArea.innerHTML = '✨👑✨';
+                gameMessage.innerHTML = `やったー！ バイキンを やっつけたぞ！<br>「${action}」で 体が つよくなったね！`;
+                
+                // ボタンを隠して、リセットボタンを出す
+                buttonsArea.style.display = 'none';
+                restartBtn.style.display = 'inline-block';
+            }, 1200);
+        }
+
+        function resetGame() {
+            document.getElementById('enemy-area').innerHTML = '👾';
+            document.getElementById('game-message').innerHTML = 'あ！ また バイキンが あらわれた！<br>つぎは どの わざを つかう？';
+            document.getElementById('buttons-area').style.display = 'grid';
+            document.getElementById('restart-btn').style.display = 'none';
+        }
+    </script>
+
+</body>
+</html>
